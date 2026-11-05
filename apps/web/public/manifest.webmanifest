@@ -1,0 +1,30 @@
+{
+  "name": "AGITO019",
+  "short_name": "AGITO019",
+  "description": "O que fazer hoje na região 019: música ao vivo, bares e eventos.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080d",
+  "theme_color": "#ff4d1a",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/icon-agito019.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

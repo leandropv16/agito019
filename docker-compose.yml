@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: agito019-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agito019
+      POSTGRES_PASSWORD: agito019
+      POSTGRES_DB: agito019
+    ports:
+      - "55432:5432"
+    volumes:
+      - agito019_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agito019 -d agito019"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  agito019_pgdata:

@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #f6f4ee;
+  --card: #141414;
+  --card-foreground: #f6f4ee;
+  --popover: #161616;
+  --popover-foreground: #f6f4ee;
+  --primary: #f3e03a;
+  --primary-foreground: #16140a;
+  --secondary: #1c1c1c;
+  --secondary-foreground: #f6f4ee;
+  --muted: #161616;
+  --muted-foreground: #a39e93;
+  --accent: #ffe56a;
+  --accent-foreground: #16140a;
+  --destructive: #ef4444;
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #f3e03a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="combobox"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.ticket {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 18px;
+}
+
+.ticket-stub {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: linear-gradient(180deg, #1a1020 0%, #241018 100%);
+  border-right: 1px dashed #3a3148;
+  text-align: center;
+}
+
+.ticket-stub::before,
+.ticket-stub::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--background);
+}
+
+.ticket-stub::before {
+  top: -8px;
+}
+
+.ticket-stub::after {
+  bottom: -8px;
+}
+
+.leaflet-container {
+  background: #141414;
+  font-family: inherit;
+  z-index: 0;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--card);
+  color: var(--foreground);
+  border-radius: 14px;
+}
+
+@keyframes agito-caret {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.agito-caret {
+  animation: agito-caret 1.05s steps(1, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agito-caret {
+    animation: none;
+    opacity: 0;
+  }
+}

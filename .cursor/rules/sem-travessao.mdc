@@ -1,0 +1,23 @@
+---
+description: Proíbe travessões (em dash e en dash) em qualquer texto do projeto
+alwaysApply: true
+---
+
+# Sem travessão
+
+Nunca use travessão em dash (`—`, U+2014) nem en dash (`–`, U+2013) em código, comentários, strings, UI, docs, commits, seed, mensagens de erro ou nomes.
+
+Hífen ASCII `-` só em identificadores, flags, slugs e palavras compostas (`soft-delete`, `--port`). Não use hífen como substituto de travessão em frases.
+
+## Substituições
+
+| Uso | Evitar | Usar |
+| --- | --- | --- |
+| Título | `AGITO019 — Home` | `AGITO019: Home` |
+| Frase | `onde — a gente` | `onde. A gente` ou `onde, a gente` |
+| Local | `Cambuí — Campinas` | `Cambuí · Campinas` |
+| Horário | `18:00 – 02:00` | `18:00 a 02:00` |
+| Cardinalidade | `1—N` | `1:N` |
+| Vazio | `"—"` | `"..."` |
+
+Antes de encerrar uma alteração, busque `—` e `–` nos arquivos tocados e remova qualquer ocorrência.

@@ -1,0 +1,583 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../apps/api/src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  PARTNER
+}
+
+enum EstablishmentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ArtistType {
+  SOLO
+  DUO
+  BAND
+  DJ
+  OTHER
+}
+
+enum ArtistStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EventType {
+  LIVE_MUSIC
+  PARTY
+  FESTIVAL
+  CAR_MEET
+  SPECIAL_EVENT
+  OTHER
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  ARCHIVED
+}
+
+enum AgendaStatus {
+  CONFIRMED
+  PENDING
+  OUTDATED
+}
+
+enum EntryPriceType {
+  FREE
+  COUVERT
+  TICKET
+  UP_TO
+  FROM
+}
+
+enum ReportProblemType {
+  WRONG_TIME
+  CANCELLED
+  WRONG_VENUE
+  WRONG_ARTIST
+  OTHER
+}
+
+enum ClickTarget {
+  ROUTE
+  WHATSAPP
+  PHONE
+  INSTAGRAM
+}
+
+enum ClickEntityType {
+  EVENT
+  ESTABLISHMENT
+  ARTIST
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  sessions       AuthSession[]
+  establishments UserEstablishment[]
+  artists        UserArtist[]
+}
+
+model AuthSession {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  refreshTokenHash String
+  expiresAt        DateTime  @db.Timestamptz(3)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(3)
+  revokedAt        DateTime? @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model UserEstablishment {
+  userId          String @db.Uuid
+  establishmentId String @db.Uuid
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+
+  @@id([userId, establishmentId])
+}
+
+model UserArtist {
+  userId   String @db.Uuid
+  artistId String @db.Uuid
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Restrict)
+
+  @@id([userId, artistId])
+}
+
+model City {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  state     String   @default("SP")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  establishments Establishment[]
+  artists        Artist[]
+
+  @@index([active])
+}
+
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  icon      String?
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  establishments EstablishmentCategory[]
+}
+
+model Audience {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  establishments EstablishmentAudience[]
+  events         EventAudience[]
+}
+
+model Amenity {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  establishments EstablishmentAmenity[]
+}
+
+model Establishment {
+  id                String              @id @default(uuid()) @db.Uuid
+  name              String
+  slug              String              @unique
+  shortDescription  String?
+  description       String?             @db.Text
+  phone             String?
+  whatsapp          String?
+  instagramUrl      String?
+  websiteUrl        String?
+  addressStreet     String?
+  addressNumber     String?
+  addressComplement String?
+  neighborhood      String?
+  postalCode        String?
+  cityId            String              @db.Uuid
+  latitude          Decimal             @db.Decimal(10, 7)
+  longitude         Decimal             @db.Decimal(10, 7)
+  googleMapsUrl     String?
+  status            EstablishmentStatus @default(DRAFT)
+  hasMusic          Boolean?
+  createdAt         DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime            @updatedAt @db.Timestamptz(3)
+  deletedAt         DateTime?           @db.Timestamptz(3)
+
+  city          City                     @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  categories    EstablishmentCategory[]
+  genres        EstablishmentGenre[]
+  audiences     EstablishmentAudience[]
+  amenities     EstablishmentAmenity[]
+  businessHours BusinessHour[]
+  media         EstablishmentMedia[]
+  events        Event[]
+  promotions    Promotion[]
+  users         UserEstablishment[]
+  campaigns     CommercialCampaign[]
+
+  @@index([status])
+  @@index([cityId])
+  @@index([deletedAt])
+}
+
+model EstablishmentCategory {
+  establishmentId String @db.Uuid
+  categoryId      String @db.Uuid
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  category      Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([establishmentId, categoryId])
+  @@unique([establishmentId, categoryId])
+}
+
+model EstablishmentAudience {
+  establishmentId String @db.Uuid
+  audienceId      String @db.Uuid
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  audience      Audience      @relation(fields: [audienceId], references: [id], onDelete: Restrict)
+
+  @@id([establishmentId, audienceId])
+  @@unique([establishmentId, audienceId])
+}
+
+model EstablishmentAmenity {
+  establishmentId String @db.Uuid
+  amenityId       String @db.Uuid
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  amenity       Amenity       @relation(fields: [amenityId], references: [id], onDelete: Restrict)
+
+  @@id([establishmentId, amenityId])
+  @@unique([establishmentId, amenityId])
+}
+
+model BusinessHour {
+  id              String    @id @default(uuid()) @db.Uuid
+  establishmentId String    @db.Uuid
+  dayOfWeek       DayOfWeek
+  opensAt         DateTime? @db.Time(0)
+  closesAt        DateTime? @db.Time(0)
+  closed          Boolean   @default(false)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+
+  @@unique([establishmentId, dayOfWeek])
+}
+
+model Artist {
+  id           String       @id @default(uuid()) @db.Uuid
+  name         String
+  slug         String       @unique
+  type         ArtistType
+  bio          String?      @db.Text
+  instagramUrl String?
+  whatsapp     String?
+  videoUrl     String?
+  hireUrl      String?
+  cityId       String?      @db.Uuid
+  status       ArtistStatus @default(DRAFT)
+  createdAt    DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime     @updatedAt @db.Timestamptz(3)
+  deletedAt    DateTime?    @db.Timestamptz(3)
+
+  city      City?                @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  genres    ArtistGenre[]
+  media     ArtistMedia[]
+  events    EventArtist[]
+  users     UserArtist[]
+  campaigns CommercialCampaign[]
+
+  @@index([status])
+  @@index([cityId])
+  @@index([deletedAt])
+}
+
+model MusicGenre {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  artists        ArtistGenre[]
+  events         EventGenre[]
+  establishments EstablishmentGenre[]
+}
+
+model EstablishmentGenre {
+  establishmentId String @db.Uuid
+  genreId         String @db.Uuid
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  genre         MusicGenre    @relation(fields: [genreId], references: [id], onDelete: Restrict)
+
+  @@id([establishmentId, genreId])
+  @@unique([establishmentId, genreId])
+}
+
+model ArtistGenre {
+  artistId String @db.Uuid
+  genreId  String @db.Uuid
+
+  artist Artist     @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  genre  MusicGenre @relation(fields: [genreId], references: [id], onDelete: Restrict)
+
+  @@id([artistId, genreId])
+  @@unique([artistId, genreId])
+}
+
+model Event {
+  id              String          @id @default(uuid()) @db.Uuid
+  title           String
+  slug            String          @unique
+  description     String?         @db.Text
+  establishmentId String          @db.Uuid
+  eventType       EventType
+  startAt         DateTime        @db.Timestamptz(3)
+  endAt           DateTime?       @db.Timestamptz(3)
+  status          EventStatus     @default(DRAFT)
+  agendaStatus    AgendaStatus    @default(PENDING)
+  entryPriceType  EntryPriceType?
+  entryPriceCents Int?
+  hasMusic        Boolean?
+  createdAt       DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @db.Timestamptz(3)
+  deletedAt       DateTime?       @db.Timestamptz(3)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  artists       EventArtist[]
+  genres        EventGenre[]
+  audiences     EventAudience[]
+  media         EventMedia[]
+  reports       EventReport[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([agendaStatus])
+  @@index([startAt])
+  @@index([establishmentId])
+  @@index([eventType])
+  @@index([deletedAt])
+}
+
+model EventReport {
+  id          String            @id @default(uuid()) @db.Uuid
+  eventId     String            @db.Uuid
+  problemType ReportProblemType
+  comment     String?           @db.Text
+  createdAt   DateTime          @default(now()) @db.Timestamptz(3)
+  resolvedAt  DateTime?         @db.Timestamptz(3)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([createdAt])
+  @@index([resolvedAt])
+}
+
+model ClickMetric {
+  id         String          @id @default(uuid()) @db.Uuid
+  target     ClickTarget
+  entityType ClickEntityType
+  entityId   String          @db.Uuid
+  path       String?
+  createdAt  DateTime        @default(now()) @db.Timestamptz(3)
+
+  @@index([target, createdAt])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model EventAudience {
+  eventId    String @db.Uuid
+  audienceId String @db.Uuid
+
+  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  audience Audience @relation(fields: [audienceId], references: [id], onDelete: Restrict)
+
+  @@id([eventId, audienceId])
+  @@unique([eventId, audienceId])
+}
+
+model EventArtist {
+  eventId   String @db.Uuid
+  artistId  String @db.Uuid
+  sortOrder Int    @default(0)
+
+  event  Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Restrict)
+
+  @@id([eventId, artistId])
+  @@unique([eventId, artistId])
+}
+
+model EventGenre {
+  eventId String @db.Uuid
+  genreId String @db.Uuid
+
+  event Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  genre MusicGenre @relation(fields: [genreId], references: [id], onDelete: Restrict)
+
+  @@id([eventId, genreId])
+  @@unique([eventId, genreId])
+}
+
+model Promotion {
+  id              String    @id @default(uuid()) @db.Uuid
+  establishmentId String    @db.Uuid
+  title           String
+  description     String?   @db.Text
+  startsAt        DateTime  @db.Timestamptz(3)
+  endsAt          DateTime  @db.Timestamptz(3)
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
+  deletedAt       DateTime? @db.Timestamptz(3)
+
+  establishment Establishment    @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  media         PromotionMedia[]
+
+  @@index([establishmentId])
+  @@index([startsAt])
+  @@index([endsAt])
+  @@index([active])
+  @@index([deletedAt])
+}
+
+model Media {
+  id            String   @id @default(uuid()) @db.Uuid
+  path          String
+  thumbnailPath String?
+  mimeType      String
+  width         Int?
+  height        Int?
+  fileSize      Int
+  altText       String?
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  establishments EstablishmentMedia[]
+  artists        ArtistMedia[]
+  events         EventMedia[]
+  promotions     PromotionMedia[]
+}
+
+model EstablishmentMedia {
+  establishmentId String  @db.Uuid
+  mediaId         String  @db.Uuid
+  isCover         Boolean @default(false)
+  sortOrder       Int     @default(0)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  media         Media         @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@id([establishmentId, mediaId])
+  @@index([establishmentId, sortOrder])
+}
+
+model ArtistMedia {
+  artistId  String  @db.Uuid
+  mediaId   String  @db.Uuid
+  isCover   Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  media  Media  @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@id([artistId, mediaId])
+}
+
+model EventMedia {
+  eventId   String  @db.Uuid
+  mediaId   String  @db.Uuid
+  isCover   Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@id([eventId, mediaId])
+}
+
+model PromotionMedia {
+  promotionId String  @db.Uuid
+  mediaId     String  @db.Uuid
+  isCover     Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  media     Media     @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@id([promotionId, mediaId])
+}
+
+model CommercialPlan {
+  id                  String   @id @default(uuid()) @db.Uuid
+  name                String
+  slug                String   @unique
+  dailyPriceCents     Int?
+  active              Boolean  @default(true)
+  showPhoto           Boolean  @default(true)
+  showInstagram       Boolean  @default(false)
+  showWebsite         Boolean  @default(false)
+  showMap             Boolean  @default(false)
+  showArtist          Boolean  @default(false)
+  showArtistInstagram Boolean  @default(false)
+  highlighted         Boolean  @default(false)
+  priority            Int      @default(0)
+  createdAt           DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+
+  campaigns CommercialCampaign[]
+}
+
+model CommercialCampaign {
+  id               String        @id @default(uuid()) @db.Uuid
+  commercialPlanId String        @db.Uuid
+  establishmentId  String?       @db.Uuid
+  artistId         String?       @db.Uuid
+  startsAt         DateTime      @db.Timestamptz(3)
+  endsAt           DateTime      @db.Timestamptz(3)
+  unitPriceCents   Int
+  totalPriceCents  Int
+  paymentStatus    PaymentStatus @default(PENDING)
+  notes            String?       @db.Text
+  createdAt        DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime      @updatedAt @db.Timestamptz(3)
+
+  plan          CommercialPlan @relation(fields: [commercialPlanId], references: [id], onDelete: Restrict)
+  establishment Establishment? @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  artist        Artist?        @relation(fields: [artistId], references: [id], onDelete: Restrict)
+
+  @@index([startsAt])
+  @@index([endsAt])
+  @@index([paymentStatus])
+  @@index([establishmentId])
+  @@index([artistId])
+}

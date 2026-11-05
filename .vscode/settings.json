@@ -1,0 +1,17 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "files.watcherExclude": {
+    "**/apps/api/src/generated/**": true,
+    "**/apps/api/dist/**": true,
+    "**/.next/**": true
+  },
+  "search.exclude": {
+    "**/apps/api/src/generated": true,
+    "**/apps/api/dist": true,
+    "**/.next": true
+  },
+  "typescript.tsserver.exclude": [
+    "**/apps/api/src/generated/**",
+    "**/node_modules/**"
+  ]
+}
